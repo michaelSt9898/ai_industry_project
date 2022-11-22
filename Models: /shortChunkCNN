@@ -71,16 +71,11 @@ AllMel = AllMel.astype(np.float32)
 audio_label = np.delete(audio_label, bad_index)
 
 # Convert labels from string into numerical value
-audio_label[audio_label == 'blues'] = 0
-audio_label[audio_label == 'classical'] = 1
-audio_label[audio_label == 'country'] = 2
-audio_label[audio_label == 'disco'] = 3
-audio_label[audio_label == 'hiphop'] = 4
-audio_label[audio_label == 'jazz'] = 5
-audio_label[audio_label == 'metal'] = 6
-audio_label[audio_label == 'pop'] = 7
-audio_label[audio_label == 'reggae'] = 8
-audio_label[audio_label == 'rock'] = 9
+audio_label[audio_label == ' Deep House'] = 0
+audio_label[audio_label == 'Disco Funk'] = 1
+audio_label[audio_label == 'Chinese Traditional'] = 2
+audio_label[audio_label == 'Reggaeton Pop'] = 3
+audio_label[audio_label == 'Keyboard Collection'] = 4
 audio_label = [int(i) for i in audio_label]
 audio_label = np.array(audio_label)
 
@@ -89,3 +84,57 @@ y = tensorflow.keras.utils.to_categorical(audio_label,num_classes = 10, dtype ="
 
 # Save the features and labels as a .npz file
 np.savez_compressed(os.getcwd()+"/MusicFeatures.npz", spec= AllSpec, mel= AllMel, mfcc= AllMfcc, zcr= AllZcr, cen= AllCen, chroma= AllChroma, target=y)
+
+
+
+# Part-2 Classification 
+# 2.1 Import Libaries 
+import os, sys, cv2
+import seaborn as sn
+import numpy as np
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import confusion_matrix
+import keras
+from keras.models import Sequential, Input,Model, load_model
+from keras.layers import Dense, Dropout, Flatten, LSTM
+from keras.layers import Conv2D, MaxPooling2D, Conv1D, MaxPooling1D, MaxPool1D, GaussianNoise, GlobalMaxPooling1D
+from keras.layers import BatchNormalization
+from keras.callbacks import ModelCheckpoint
+from keras.layers.advanced_activations import LeakyReLU
+import tensorflow
+import matplotlib.pyplot as plt
+from sklearn.model_selection import KFold
+
+# 2.2  Import npz file, extract the features, and split the train-test data
+# load the .npz file of features
+f = np.load(os.getcwd()+"/MusicFeatures.npz")
+S = f['spec']
+mfcc = f['mfcc']
+mel = f['mel']
+chroma = f['chroma']
+y = f['target']
+
+# split train-test data
+S_train, S_test, mfcc_train, mfcc_test, mel_train, mel_test, chroma_train, chroma_test, y_train, y_test = train_test_split(S, mfcc, mel, chroma, y, test_size= 0.2)
+
+#2.3  Resizing and Reshaping data
+
+# Spectrogram
+maximum1 = np.amax(S_train)
+S_train = S_train/np.amax(maximum1)
+S_test = S_test/np.amax(maximum1)
+
+S_train = S_train.astype(np.float32)
+S_test = S_test.astype(np.float32)
+
+N, row, col = S_train.shape
+S_train = S_train.reshape((N, row, col, 1))
+
+N, row, col = S_test.shape
+S_test = S_test.reshape((N, row, col, 1))
+#2.4 Save training and testing features in npz file
+
+
+
+
